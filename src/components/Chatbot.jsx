@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, HelpCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const Chatbot = () => {
@@ -8,42 +9,39 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [showQuickActions, setShowQuickActions] = useState(true);
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   const quickActions = [
-    { id: 'submit', label: t('chatbot.actions.submit'), icon: '📝' },
-    { id: 'check', label: t('chatbot.actions.check'), icon: '🔍' },
-    { id: 'map', label: t('chatbot.actions.map'), icon: '🗺️' },
-    { id: 'contact', label: t('chatbot.actions.contact'), icon: '📞' },
+    { id: 'submit', label: t('chatbot.actions.submit'), icon: '📝', route: '/submit-complaint' },
+    { id: 'check', label: t('chatbot.actions.check'), icon: '🔍', route: '/my-complaints' },
+    { id: 'map', label: t('chatbot.actions.map'), icon: '🗺️', route: '/dashboard' },
+    { id: 'contact', label: t('chatbot.actions.contact'), icon: '📞', route: null },
   ];
 
-  const responses = {
-    submit: {
-      text: t('chatbot.responses.submit'),
-      action: () => window.location.href = '/submit-complaint'
-    },
-    check: {
-      text: t('chatbot.responses.check'),
-      action: () => window.location.href = '/my-complaints'
-    },
-    map: {
-      text: t('chatbot.responses.map'),
-      action: () => window.location.href = '/dashboard'
-    },
-    contact: {
-      text: t('chatbot.responses.contact'),
-      action: null
-    },
+  const getResponse = (actionId) => {
+    const action = quickActions.find(a => a.id === actionId);
+    return {
+      text: t(`chatbot.responses.${actionId}`),
+      route: action?.route
+    };
   };
 
   const handleQuickAction = (actionId) => {
-    const userMessage = { type: 'user', text: quickActions.find(a => a.id === actionId)?.label };
-    const botMessage = { type: 'bot', text: responses[actionId].text };
+    const action = quickActions.find(a => a.id === actionId);
+    const response = getResponse(actionId);
+    
+    const userMessage = { type: 'user', text: action?.label };
+    const botMessage = { type: 'bot', text: response.text };
     
     setMessages(prev => [...prev, userMessage, botMessage]);
     setShowQuickActions(false);
     
-    if (responses[actionId].action) {
-      setTimeout(() => responses[actionId].action(), 2000);
+    // Redirect to the appropriate page after showing the message
+    if (response.route) {
+      setTimeout(() => {
+        navigate(response.route);
+        setIsOpen(false); // Close chatbot after redirecting
+      }, 2000);
     }
   };
 
