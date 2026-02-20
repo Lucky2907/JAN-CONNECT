@@ -12,7 +12,7 @@ const Chatbot = () => {
   const navigate = useNavigate();
 
   const quickActions = [
-    { id: 'submit', label: t('chatbot.actions.submit'), icon: '📝', route: '/submit-complaint' },
+    { id: 'submit', label: t('chatbot.actions.submit'), icon: '📝', route: '/submit' },
     { id: 'check', label: t('chatbot.actions.check'), icon: '🔍', route: '/my-complaints' },
     { id: 'map', label: t('chatbot.actions.map'), icon: '🗺️', route: '/dashboard' },
     { id: 'contact', label: t('chatbot.actions.contact'), icon: '📞', route: null },
