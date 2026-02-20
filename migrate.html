@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebase Data Migration Tool</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+      font-size: 2rem;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e0e7ff;
+      color: #667eea;
+    }
+
+    .btn-secondary:hover {
+      background: #c7d2fe;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .log-container {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .log-entry {
+      margin-bottom: 8px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .log-time {
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+
+    .log-info { color: #60a5fa; }
+    .log-success { color: #34d399; }
+    .log-warning { color: #fbbf24; }
+    .log-error { color: #f87171; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .warning-box {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+    }
+
+    .warning-box strong {
+      color: #92400e;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Firebase Migration Tool</h1>
+    <p class="subtitle">Migrate mock complaint data to Firebase Firestore</p>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="totalCount">8</div>
+        <div class="stat-label">Total Complaints</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="successCount">0</div>
+        <div class="stat-label">Migrated</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="errorCount">0</div>
+        <div class="stat-label">Errors</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="firestoreCount">-</div>
+        <div class="stat-label">In Database</div>
+      </div>
+    </div>
+
+    <div class="warning-box" id="warningBox" style="display: none;">
+      <strong>⚠️ Warning:</strong> This will delete all existing complaints in Firestore!
+    </div>
+
+    <div class="button-group">
+      <button class="btn-primary" onclick="migrateData(false)" id="migrateBtn">
+        ➕ Add Mock Data
+      </button>
+      <button class="btn-danger" onclick="migrateData(true)" id="clearBtn">
+        🗑️ Clear & Replace All
+      </button>
+      <button class="btn-secondary" onclick="verifyData()" id="verifyBtn">
+        🔍 Verify Data
+      </button>
+      <button class="btn-secondary" onclick="clearLogs()">
+        🧹 Clear Logs
+      </button>
+    </div>
+
+    <div class="log-container" id="logContainer">
+      <div class="log-entry">
+        <span class="log-info">Ready to migrate data to Firebase Firestore</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-f0zr-cwIxlDiRniwymf1DXpiza3n7kA",
+      authDomain: "vega-caf5c.firebaseapp.com",
+      projectId: "vega-caf5c",
+      storageBucket: "vega-caf5c.firebasestorage.app",
+      messagingSenderId: "353719267367",
+      appId: "1:353719267367:web:78882bab1347f7e3f85e02",
+      measurementId: "G-C0CD8J2E9G"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Mock complaints data
+    const mockComplaints = [
+      {
+        id: 1,
+        title: "Pothole on Main Street",
+        description: "Large pothole causing traffic issues",
+        category: "road",
+        severity: "high",
+        status: "Resolved",
+        latitude: 28.6139,
+        longitude: 77.2090,
+        citizenName: "Rahul Sharma",
+        citizenId: "CIT001",
+        createdAt: "2026-02-15T10:30:00",
+        resolvedAt: "2026-02-18T14:30:00",
+        assignedDepartment: "Roads & Transport",
+        imageUrl: null,
+        duplicateCount: 2,
+        upvotes: 3,
+        upvotedBy: ["CIT002", "CIT003", "CIT004"],
+        isEscalated: false
+      },
+      {
+        id: 2,
+        title: "Garbage accumulation near park",
+        description: "Overflowing bins not cleared for 3 days",
+        category: "garbage",
+        severity: "medium",
+        status: "Assigned",
+        latitude: 28.6129,
+        longitude: 77.2295,
+        citizenName: "Priya Gupta",
+        citizenId: "CIT002",
+        createdAt: "2026-02-17T08:00:00",
+        resolvedAt: null,
+        assignedDepartment: "Sanitation",
+        imageUrl: null,
+        duplicateCount: 0,
+        upvotes: 1,
+        upvotedBy: ["CIT002"],
+        isEscalated: false
+      },
+      {
+        id: 3,
+        title: "Street light not working",
+        description: "Dark spot creating safety concerns",
+        category: "lighting",
+        severity: "high",
+        status: "In Review",
+        latitude: 28.6219,
+        longitude: 77.2190,
+        citizenName: "Amit Kumar",
+        citizenId: "CIT003",
+        createdAt: "2026-02-16T20:00:00",
+        resolvedAt: null,
+        assignedDepartment: "Electricity",
+        imageUrl: null,
+        duplicateCount: 1,
+        upvotes: 2,
+        upvotedBy: ["CIT003", "CIT005"],
+        isEscalated: false
+      },
+      {
+        id: 4,
+        title: "Blocked drainage system",
+        description: "Water logging during rain",
+        category: "drainage",
+        severity: "high",
+        status: "Submitted",
+        latitude: 28.6339,
+        longitude: 77.2190,
+        citizenName: "Sneha Patel",
+        citizenId: "CIT004",
+        createdAt: "2026-02-18T12:00:00",
+        resolvedAt: null,
+        assignedDepartment: "Water & Drainage",
+        imageUrl: null,
+        duplicateCount: 0,
+        upvotes: 1,
+        upvotedBy: ["CIT004"],
+        isEscalated: false
+      },
+      {
+        id: 5,
+        title: "Road construction debris left on street",
+        description: "Construction materials blocking footpath",
+        category: "road",
+        severity: "medium",
+        status: "Assigned",
+        latitude: 28.6439,
+        longitude: 77.2290,
+        citizenName: "Vikram Singh",
+        citizenId: "CIT005",
+        createdAt: "2026-02-19T09:30:00",
+        resolvedAt: null,
+        assignedDepartment: "Roads & Transport",
+        imageUrl: null,
+        duplicateCount: 0,
+        upvotes: 0,
+        upvotedBy: [],
+        isEscalated: false
+      },
+      {
+        id: 6,
+        title: "Illegal dumping near residential area",
+        description: "Medical waste dumped in open area",
+        category: "garbage",
+        severity: "high",
+        status: "In Review",
+        latitude: 28.6539,
+        longitude: 77.2390,
+        citizenName: "Anjali Mehta",
+        citizenId: "CIT006",
+        createdAt: "2026-02-14T15:00:00",
+        resolvedAt: null,
+        assignedDepartment: "Sanitation",
+        imageUrl: null,
+        duplicateCount: 0,
+        upvotes: 0,
+        upvotedBy: [],
+        isEscalated: false
+      },
+      {
+        id: 7,
+        title: "Multiple potholes on highway connector",
+        description: "Dangerous road condition",
+        category: "road",
+        severity: "high",
+        status: "Submitted",
+        latitude: 28.6639,
+        longitude: 77.2490,
+        citizenName: "Rajesh Verma",
+        citizenId: "CIT007",
+        createdAt: "2026-02-20T07:00:00",
+        resolvedAt: null,
+        assignedDepartment: "Roads & Transport",
+        imageUrl: null,
+        duplicateCount: 0,
+        upvotes: 0,
+        upvotedBy: [],
+        isEscalated: false
+      },
+      {
+        id: 8,
+        title: "Broken manhole cover",
+        description: "Safety hazard for vehicles and pedestrians",
+        category: "drainage",
+        severity: "high",
+        status: "Resolved",
+        latitude: 28.6239,
+        longitude: 77.2590,
+        citizenName: "Deepak Joshi",
+        citizenId: "CIT008",
+        createdAt: "2026-02-13T11:00:00",
+        resolvedAt: "2026-02-16T10:00:00",
+        assignedDepartment: "Water & Drainage",
+        imageUrl: null,
+        duplicateCount: 1,
+        upvotes: 2,
+        upvotedBy: ["CIT008", "CIT001"],
+        isEscalated: false
+      }
+    ];
+
+    // Logging functions
+    function log(message, type = 'info') {
+      const logContainer = document.getElementById('logContainer');
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `
+        <span class="log-time">[${time}]</span>
+        <span class="log-${type}">${message}</span>
+      `;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function updateStats(success, error, firestore) {
+      if (success !== undefined) document.getElementById('successCount').textContent = success;
+      if (error !== undefined) document.getElementById('errorCount').textContent = error;
+      if (firestore !== undefined) document.getElementById('firestoreCount').textContent = firestore;
+    }
+
+    function toggleButtons(disabled) {
+      document.getElementById('migrateBtn').disabled = disabled;
+      document.getElementById('clearBtn').disabled = disabled;
+      document.getElementById('verifyBtn').disabled = disabled;
+    }
+
+    // Clear existing complaints
+    async function clearExistingComplaints() {
+      log('Clearing existing complaints...', 'warning');
+      const complaintsRef = collection(db, 'complaints');
+      const snapshot = await getDocs(complaintsRef);
+      
+      if (snapshot.empty) {
+        log('No existing complaints found', 'info');
+        return 0;
+      }
+
+      const batch = writeBatch(db);
+      snapshot.docs.forEach((document) => {
+        batch.delete(doc(db, 'complaints', document.id));
+      });
+
+      await batch.commit();
+      log(`Deleted ${snapshot.size} existing complaints`, 'success');
+      return snapshot.size;
+    }
+
+    // Migrate data
+    window.migrateData = async function(clearFirst) {
+      if (clearFirst) {
+        const confirmed = confirm('⚠️ This will DELETE ALL existing complaints! Are you sure?');
+        if (!confirmed) return;
+        document.getElementById('warningBox').style.display = 'block';
+      }
+
+      toggleButtons(true);
+      log('Starting migration...', 'info');
+      updateStats(0, 0, '-');
+
+      try {
+        if (clearFirst) {
+          await clearExistingComplaints();
+        }
+
+        const complaintsRef = collection(db, 'complaints');
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const complaint of mockComplaints) {
+          try {
+            const { id, ...complaintData } = complaint;
+            await addDoc(complaintsRef, complaintData);
+            successCount++;
+            updateStats(successCount, errorCount);
+            log(`✓ Migrated: ${complaint.title}`, 'success');
+          } catch (error) {
+            errorCount++;
+            updateStats(successCount, errorCount);
+            log(`✗ Failed: ${complaint.title} - ${error.message}`, 'error');
+          }
+        }
+
+        log('Migration completed!', 'success');
+        await verifyData();
+        document.getElementById('warningBox').style.display = 'none';
+      } catch (error) {
+        log(`Migration failed: ${error.message}`, 'error');
+      } finally {
+        toggleButtons(false);
+      }
+    };
+
+    // Verify data
+    window.verifyData = async function() {
+      toggleButtons(true);
+      log('Verifying data...', 'info');
+
+      try {
+        const complaintsRef = collection(db, 'complaints');
+        const snapshot = await getDocs(complaintsRef);
+        updateStats(undefined, undefined, snapshot.size);
+        
+        if (snapshot.size === mockComplaints.length) {
+          log(`✓ All ${snapshot.size} complaints verified in Firestore!`, 'success');
+        } else {
+          log(`⚠ Found ${snapshot.size} complaints (expected ${mockComplaints.length})`, 'warning');
+        }
+      } catch (error) {
+        log(`Verification failed: ${error.message}`, 'error');
+        updateStats(undefined, undefined, 'Error');
+      } finally {
+        toggleButtons(false);
+      }
+    };
+
+    // Clear logs
+    window.clearLogs = function() {
+      document.getElementById('logContainer').innerHTML = '';
+      log('Logs cleared', 'info');
+    };
+
+    // Auto-verify on load
+    setTimeout(() => verifyData(), 1000);
+  </script>
+</body>
+</html>

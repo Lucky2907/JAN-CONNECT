@@ -1,0 +1,411 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Dark Mode (default) */
+  body {
+    background-color: #020617;
+    color: #f3f4f6;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Light Mode */
+  .light body {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.12) 0px, transparent 50%);
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Select and Option Styling for Dark Mode */
+  select {
+    color-scheme: dark;
+  }
+
+  select option {
+    background-color: #1e293b;
+    color: #f3f4f6;
+    padding: 8px;
+  }
+
+  select option:hover,
+  select option:focus,
+  select option:checked {
+    background-color: #334155;
+    color: #ffffff;
+  }
+
+  /* Light Mode Select and Option Styling */
+  .light select {
+    color-scheme: light;
+  }
+
+  .light select option {
+    background-color: #ffffff;
+    color: #0f172a;
+  }
+
+  .light select option:hover,
+  .light select option:focus,
+  .light select option:checked {
+    background-color: #e2e8f0;
+    color: #0f172a;
+  }
+}
+
+@layer components {
+  /* Dark Mode Glass */
+  .glass {
+    background-color: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+  }
+  
+  .glass-card {
+    background-color: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glass-card:hover {
+    box-shadow: 0 25px 50px -12px rgba(6, 182, 212, 0.1);
+    transform: translateY(-2px);
+  }
+
+  /* Light Mode Glass */
+  .light .glass {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(24px);
+    border: 2px solid #e2e8f0;
+    background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 1), rgba(248, 250, 252, 0.95));
+  }
+  
+  .light .glass-card {
+    background-color: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(24px);
+    border: 2px solid #cbd5e1;
+    background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 1), rgba(248, 250, 252, 0.98));
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .light .glass-card:hover {
+    box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.25), 0 4px 8px -2px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+    border-color: #94a3b8;
+  }
+  
+  .gradient-border {
+    position: relative;
+  }
+  
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.5), rgba(139, 92, 246, 0.5));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+  }
+  
+  .glow-cyan {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3), 0 0 40px rgba(6, 182, 212, 0.1);
+  }
+  
+  .glow-violet {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.1);
+  }
+  
+  .glow-danger {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3), 0 0 40px rgba(239, 68, 68, 0.1);
+  }
+  
+  .glow-success {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3), 0 0 40px rgba(16, 185, 129, 0.1);
+  }
+  
+  .btn-primary {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(to right, #06b6d4, #8b5cf6);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(6, 182, 212, 0.25);
+    transition: all 0.3s;
+  }
+  
+  .btn-primary:hover {
+    box-shadow: 0 20px 25px -5px rgba(6, 182, 212, 0.4);
+    transform: scale(1.05);
+  }
+  
+  .btn-primary:active {
+    transform: scale(0.95);
+  }
+  
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.2), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+  
+  .btn-primary:hover::before {
+    transform: translateX(100%);
+  }
+  
+  .input-focus {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: white;
+    transition: all 0.2s;
+  }
+  
+  .input-focus:focus {
+    outline: none;
+    border-color: rgba(6, 182, 212, 0.5);
+    box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+  }
+  
+  .status-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+    border: 1px solid;
+    transition: all 0.3s;
+  }
+}
+
+@layer utilities {
+  .animate-count-up {
+    animation: countUp 1s ease-out;
+  }
+  
+  @keyframes countUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .text-gradient {
+    background: linear-gradient(to right, #22d3ee, #8b5cf6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  
+  .bg-gradient-mesh {
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.2) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+  }
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+  border-radius: 1rem;
+}
+
+/* Custom Scrollbar - Dark Mode */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
+}
+
+/* Custom Scrollbar - Light Mode */
+.light ::-webkit-scrollbar-track {
+  background-color: #f1f5f9;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* Shimmer Loading Animation */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+}
+
+/* Pulse Glow Animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+  }
+  50% {
+    box-shadow: 0 0 30px currentColor, 0 0 60px currentColor;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Marker Glow Animations */
+@keyframes marker-glow-high {
+  0%, 100% {
+    box-shadow: 0 0 15px #ef4444, 0 0 30px #ef4444, 0 0 45px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 25px #ef4444, 0 0 50px #ef4444, 0 0 75px rgba(239, 68, 68, 0.7);
+  }
+}
+
+@keyframes marker-glow-medium {
+  0%, 100% {
+    box-shadow: 0 0 12px #f59e0b, 0 0 24px #f59e0b;
+  }
+  50% {
+    box-shadow: 0 0 18px #f59e0b, 0 0 36px #f59e0b;
+  }
+}
+
+@keyframes marker-glow-low {
+  0%, 100% {
+    box-shadow: 0 0 8px #10b981, 0 0 16px #10b981;
+  }
+  50% {
+    box-shadow: 0 0 12px #10b981, 0 0 24px #10b981;
+  }
+}
+
+.marker-glow-high {
+  animation: marker-glow-high 2s ease-in-out infinite;
+}
+
+.marker-glow-medium {
+  animation: marker-glow-medium 2s ease-in-out infinite;
+}
+
+.marker-glow-low {
+  animation: marker-glow-low 2s ease-in-out infinite;
+}
+
+/* Gradient Text Shine */
+@keyframes gradient-shine {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-shine {
+  background-size: 200% auto;
+  animation: gradient-shine 3s ease-in-out infinite;
+}
+
+/* Marker Cluster Styles */
+.marker-cluster-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 14px;
+  color: white;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.marker-cluster-custom:hover {
+  transform: scale(1.1);
+}
+
+.marker-cluster-small {
+  background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%);
+  width: 40px;
+  height: 40px;
+}
+
+.marker-cluster-medium {
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  width: 50px;
+  height: 50px;
+}
+
+.marker-cluster-large {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  width: 60px;
+  height: 60px;
+  animation: marker-pulse 2s ease-in-out infinite;
+}
+
+@keyframes marker-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+}
