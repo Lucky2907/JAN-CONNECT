@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import Chatbot from './Chatbot';
 import { useTheme } from '../context/ThemeContext';
 
 const Layout = () => {
@@ -45,6 +46,9 @@ const Layout = () => {
           isDark ? 'bg-accent-violet/5' : 'bg-accent-violet/10'
         }`} />
       </div>
+      
+      {/* Chatbot Assistant */}
+      <Chatbot />
     </div>
   );
 };
