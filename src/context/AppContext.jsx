@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { mockComplaints, mockUsers } from '../data/mockData';
 import { checkEscalation } from '../utils/calculations';
 import { findNearbyComplaint } from '../utils/calculations';
+import { ensureFirebaseAuth } from '../config/firebase';
 import { 
   subscribeToComplaints, 
   addComplaint as addComplaintFirestore,
@@ -20,8 +21,28 @@ export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [complaints, setComplaints] = useState(mockComplaints);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [hasRegisteredComplaint, setHasRegisteredComplaint] = useState(false);
   const [loading, setLoading] = useState(false);
   const [syncError, setSyncError] = useState(null);
+
+  const createLocalComplaint = (complaint) => {
+    const newComplaint = {
+      ...complaint,
+      id: `local-${Date.now()}`,
+      status: 'Submitted',
+      createdAt: new Date().toISOString(),
+      resolvedAt: null,
+      citizenName: user?.name || 'Anonymous',
+      citizenId: user?.citizenId || 'GUEST',
+      duplicateCount: 0,
+      isEscalated: false,
+      upvotes: 1,
+      upvotedBy: [user?.citizenId || 'GUEST']
+    };
+
+    setComplaints((prev) => [newComplaint, ...prev]);
+    return { ...newComplaint, upvoted: false };
+  };
 
   // Real-time Firestore listener for all complaints
   useEffect(() => {
@@ -77,6 +98,22 @@ export const AppProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // Keep complaint-registration state in sync across refresh/login by checking actual complaint history.
+  useEffect(() => {
+    if (!user?.citizenId) {
+      setHasRegisteredComplaint(false);
+      return;
+    }
+
+    const hasHistory = complaints.some((complaint) => {
+      const directOwner = complaint.citizenId === user.citizenId;
+      const participated = Array.isArray(complaint.upvotedBy) && complaint.upvotedBy.includes(user.citizenId);
+      return directOwner || participated;
+    });
+
+    setHasRegisteredComplaint(hasHistory);
+  }, [complaints, user?.citizenId]);
+
   const login = (email, password) => {
     const foundUser = mockUsers.find(u => u.email === email);
     if (foundUser) {
@@ -90,6 +127,7 @@ export const AppProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
+    setHasRegisteredComplaint(false);
   };
 
   const addComplaint = async (complaint) => {
@@ -100,6 +138,7 @@ export const AppProvider = ({ children }) => {
       // Instead of creating new complaint, upvote the existing one
       const citizenId = user?.citizenId || 'GUEST';
       const updatedComplaint = await upvoteComplaint(nearbyComplaint.id, citizenId);
+      setHasRegisteredComplaint(true);
       
       // Return the updated complaint with new upvote count
       if (updatedComplaint) {
@@ -113,6 +152,7 @@ export const AppProvider = ({ children }) => {
     if (USE_FIRESTORE) {
       // Add to Firestore (real-time listener will update state automatically)
       try {
+        await ensureFirebaseAuth();
         const newComplaint = await addComplaintFirestore({
           ...complaint,
           citizenName: user?.name || 'Anonymous',
@@ -120,28 +160,18 @@ export const AppProvider = ({ children }) => {
           upvotes: 1,
           upvotedBy: [user?.citizenId || 'GUEST']
         });
+        setHasRegisteredComplaint(true);
         return { ...newComplaint, upvoted: false };
       } catch (error) {
-        console.error('Error adding complaint to Firestore:', error);
-        throw error;
+        console.error('Error adding complaint to Firestore, using local fallback:', error);
+        setSyncError('Firestore write failed. Complaint was saved locally.');
+        setHasRegisteredComplaint(true);
+        return createLocalComplaint(complaint);
       }
     } else {
       // Add to local state (mock mode)
-      const newComplaint = {
-        ...complaint,
-        id: complaints.length + 1,
-        status: 'Submitted',
-        createdAt: new Date().toISOString(),
-        resolvedAt: null,
-        citizenName: user?.name || 'Anonymous',
-        citizenId: user?.citizenId || 'GUEST',
-        duplicateCount: 0,
-        isEscalated: false,
-        upvotes: 1,
-        upvotedBy: [user?.citizenId || 'GUEST']
-      };
-      setComplaints([...complaints, newComplaint]);
-      return { ...newComplaint, upvoted: false };
+      setHasRegisteredComplaint(true);
+      return createLocalComplaint(complaint);
     }
   };
 
@@ -245,9 +275,10 @@ export const AppProvider = ({ children }) => {
         user,
         isAuthenticated,
         complaints,
-        loading,
         syncError,
         useFirestore: USE_FIRESTORE,
+        hasRegisteredComplaint,
+        loading,
         login,
         logout,
         addComplaint,

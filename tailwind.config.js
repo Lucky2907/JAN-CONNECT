@@ -8,21 +8,21 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#ecfeff',
-          100: '#cffafe',
-          200: '#a5f3fc',
-          300: '#67e8f9',
-          400: '#22d3ee',
-          500: '#06b6d4',
-          600: '#0891b2',
-          700: '#0e7490',
-          800: '#155e75',
-          900: '#164e63',
+          50: '#eef3fc',
+          100: '#dbe7f8',
+          200: '#bdd1f2',
+          300: '#96b4e8',
+          400: '#678fdb',
+          500: '#3f6fcb',
+          600: '#2f58b3',
+          700: '#244792',
+          800: '#1a366f',
+          900: '#0b3d91',
         },
         accent: {
-          violet: '#8b5cf6',
-          cyan: '#06b6d4',
-          teal: '#14b8a6',
+          violet: '#ff9933',
+          cyan: '#0b3d91',
+          teal: '#138808',
         },
         danger: {
           50: '#fef2f2',
@@ -54,8 +54,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Poppins', 'Inter', 'sans-serif'],
+        sans: ['Noto Sans', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Merriweather', 'Noto Sans', 'serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',

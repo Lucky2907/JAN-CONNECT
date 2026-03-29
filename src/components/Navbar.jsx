@@ -19,8 +19,9 @@ const Navbar = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="h-16 glass border-b border-white/[0.08] flex items-center justify-between px-8 fixed top-0 right-0 left-72 z-40"
+      className="h-16 glass border-b border-primary-100 flex items-center justify-between px-8 fixed top-0 right-0 left-72 z-40"
     >
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-white to-green-600" />
       {/* Search Bar */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -83,7 +84,7 @@ const Navbar = () => {
             className={`w-10 h-10 flex items-center justify-center rounded-xl border transition-all relative group ${
               isDark
                 ? 'bg-white/[0.03] border-white/[0.08] text-gray-400 hover:text-white hover:border-primary-500/50'
-                : 'bg-white border-gray-300 text-gray-600 hover:text-gray-900 hover:border-primary-500'
+                : 'bg-white border-slate-300 text-slate-600 hover:text-slate-900 hover:border-primary-500'
             }`}
           >
             <Bell size={20} />
@@ -118,7 +119,7 @@ const Navbar = () => {
                 : 'bg-white border-gray-300 hover:border-primary-500'
             }`}
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-violet flex items-center justify-center glow-cyan">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center text-white">
               <User size={16} />
             </div>
             <div className="text-left hidden md:block">

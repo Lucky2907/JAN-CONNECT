@@ -15,6 +15,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminMapView from './pages/AdminMapView';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminComplaints from './pages/AdminComplaints';
+import AdminRedCircles from './pages/AdminRedCircles';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
               <Route path="admin/map-view" element={<ProtectedRoute adminOnly><AdminMapView /></ProtectedRoute>} />
               <Route path="admin/analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
               <Route path="admin/complaints" element={<ProtectedRoute adminOnly><AdminComplaints /></ProtectedRoute>} />
+              <Route path="admin/red-circles" element={<ProtectedRoute adminOnly><AdminRedCircles /></ProtectedRoute>} />
             </Route>
           </Routes>
         </BrowserRouter>

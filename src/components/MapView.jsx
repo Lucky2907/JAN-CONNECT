@@ -7,6 +7,7 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import { useEffect, useMemo, memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import MarkerClusterGroup from 'react-leaflet-cluster';
+import { buildActiveRedCircles } from '../utils/geofencingEngine';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -112,9 +113,10 @@ const ComplaintMarker = memo(({ complaint, onMarkerClick }) => {
 
 ComplaintMarker.displayName = 'ComplaintMarker';
 
-const MapView = ({ complaints, center = [28.6139, 77.2090], zoom = 12, onMarkerClick, selectedComplaint, enableClustering = false, onAreaClick }) => {
+const MapView = ({ complaints, center = [22.9734, 78.6569], zoom = 5, onMarkerClick, selectedComplaint, enableClustering = false, onAreaClick }) => {
   // Memoize map center to prevent unnecessary re-renders
   const mapCenter = useMemo(() => center, [center[0], center[1]]);
+  const redCircles = useMemo(() => buildActiveRedCircles(complaints), [complaints]);
   
   // Show loading state while map initializes
   const [isLoading, setIsLoading] = useState(true);
@@ -209,6 +211,29 @@ const MapView = ({ complaints, center = [28.6139, 77.2090], zoom = 12, onMarkerC
         />
         
         {selectedComplaint && <MapUpdater center={[selectedComplaint.latitude, selectedComplaint.longitude]} />}
+
+        {redCircles.map((zone) => (
+          <Circle
+            key={`zone-${zone.id}`}
+            center={[zone.latitude, zone.longitude]}
+            radius={zone.radiusMeters}
+            pathOptions={{
+              color: '#dc2626',
+              fillColor: '#ef4444',
+              fillOpacity: 0.15,
+              weight: 2,
+              dashArray: '6 6'
+            }}
+          >
+            <Popup>
+              <div className="text-gray-900 max-w-xs">
+                <h4 className="font-bold text-sm">{zone.name}</h4>
+                <p className="text-xs mt-1">{zone.reason}</p>
+                <p className="text-xs mt-1">Restricted radius: {zone.radiusMeters}m</p>
+              </div>
+            </Popup>
+          </Circle>
+        ))}
         
         {/* Show circle around clicked area */}
         {clickedArea && (

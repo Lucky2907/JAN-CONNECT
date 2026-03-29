@@ -11,6 +11,7 @@ import MapView from '../components/MapView';
 import GlassCard from '../components/GlassCard';
 import { PageWrapper, FadeIn } from '../components/MotionWrapper';
 import AddressSearch from '../components/AddressSearch';
+import { analyzeImageForensics } from '../utils/imageForensics';
 
 const SubmitComplaint = () => {
   const navigate = useNavigate();
@@ -22,6 +23,8 @@ const SubmitComplaint = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [imageForensics, setImageForensics] = useState(null);
+  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
@@ -55,7 +58,7 @@ const SubmitComplaint = () => {
     }));
   };
 
-  const handleFileSelect = (file) => {
+  const handleFileSelect = async (file) => {
     if (!file) return;
 
     // Validate file type
@@ -73,6 +76,7 @@ const SubmitComplaint = () => {
     }
 
     setImageFile(file);
+    setIsAnalyzingImage(true);
 
     // Create preview
     const reader = new FileReader();
@@ -81,6 +85,24 @@ const SubmitComplaint = () => {
       setFormData(prev => ({ ...prev, imageUrl: reader.result }));
     };
     reader.readAsDataURL(file);
+
+    try {
+      const forensicsResult = await analyzeImageForensics(file);
+      setImageForensics(forensicsResult);
+    } catch (error) {
+      console.error('Image forensics failed:', error);
+      setImageForensics({
+        verdict: 'SUSPICIOUS',
+        confidence: 50,
+        reasons: ['Image analysis service could not fully validate this upload.'],
+        ela_score: 0,
+        metadata_ok: false,
+        ai_generated: false,
+        action: 'FLAG_FOR_REVIEW'
+      });
+    } finally {
+      setIsAnalyzingImage(false);
+    }
   };
 
   const handleFileInputChange = (e) => {
@@ -109,6 +131,7 @@ const SubmitComplaint = () => {
   const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    setImageForensics(null);
     setFormData(prev => ({ ...prev, imageUrl: null }));
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -128,9 +151,15 @@ const SubmitComplaint = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (imageForensics?.action === 'REJECT') {
+      alert('❌ This image was rejected by forensics checks. Please upload a genuine photo.');
+      return;
+    }
+
     try {
       const result = await addComplaint({
         ...formData,
+        imageForensics,
         assignedDepartment: categories.find(c => c.value === formData.category)?.label || 'General'
       });
 
@@ -345,6 +374,36 @@ const SubmitComplaint = () => {
                         isDark ? 'text-gray-500' : 'text-gray-600'
                       }`}>PNG, JPG, GIF, WebP up to 10MB</p>
                     </motion.div>
+                  )}
+
+                  {(isAnalyzingImage || imageForensics) && (
+                    <div className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
+                      isDark ? 'border-white/[0.12] bg-white/[0.02]' : 'border-slate-200 bg-slate-50'
+                    }`}>
+                      {isAnalyzingImage ? (
+                        <p className={isDark ? 'text-gray-300' : 'text-slate-700'}>Analyzing image authenticity...</p>
+                      ) : (
+                        <>
+                          <p className={`font-semibold ${
+                            imageForensics?.verdict === 'REAL'
+                              ? 'text-green-600'
+                              : imageForensics?.verdict === 'FAKE'
+                                ? 'text-red-600'
+                                : 'text-amber-600'
+                          }`}>
+                            Forensics Verdict: {imageForensics?.verdict} ({imageForensics?.confidence}%)
+                          </p>
+                          <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
+                            Action: {imageForensics?.action} | ELA: {imageForensics?.ela_score} | Metadata OK: {String(imageForensics?.metadata_ok)}
+                          </p>
+                          {imageForensics?.reasons?.length > 0 && (
+                            <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
+                              Reason: {imageForensics.reasons[0]}
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

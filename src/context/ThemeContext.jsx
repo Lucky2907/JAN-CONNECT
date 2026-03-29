@@ -12,13 +12,10 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    // Check local storage or system preference
+    // Default to light for public-service portal styling
     const saved = localStorage.getItem('theme');
     if (saved) return saved;
-    
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
+
     return 'light';
   });
 

@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, FileText, BarChart3, Map, AlertCircle, LogOut, Shield, Users, Sparkles } from 'lucide-react';
+import { Home, FileText, BarChart3, Map, AlertCircle, LogOut, Shield, Users, Landmark } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -21,6 +21,7 @@ const Sidebar = () => {
   const adminLinks = [
     { to: '/admin/dashboard', icon: Shield, label: t('sidebar.adminDashboard') },
     { to: '/admin/map-view', icon: Map, label: t('sidebar.adminMap') },
+    { to: '/admin/red-circles', icon: AlertCircle, label: 'Red Circles' },
     { to: '/admin/analytics', icon: BarChart3, label: t('sidebar.analytics') },
     { to: '/admin/complaints', icon: FileText, label: t('sidebar.allComplaints') }
   ];
@@ -50,9 +51,9 @@ const Sidebar = () => {
           <motion.div
             animate={{ rotate: [0, 360] }}
             transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-            className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-violet flex items-center justify-center glow-cyan"
+            className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-700 to-primary-900 flex items-center justify-center"
           >
-            <Sparkles className="w-6 h-6 text-white" />
+            <Landmark className="w-6 h-6 text-white" />
           </motion.div>
           <div>
             <h1 className="text-xl font-bold font-display text-gradient">
@@ -61,6 +62,7 @@ const Sidebar = () => {
             <p className={`text-xs ${
               isDark ? 'text-gray-500' : 'text-gray-600'
             }`}>{t('app.subtitle')}</p>
+            <div className="mt-1 h-1.5 w-20 rounded-full bg-gradient-to-r from-orange-500 via-white to-green-600 border border-slate-200" />
           </div>
         </div>
       </motion.div>
@@ -78,7 +80,7 @@ const Sidebar = () => {
           <div className="flex items-center gap-3">
             <motion.div
               whileHover={{ scale: 1.1, rotate: 5 }}
-              className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary-500 to-accent-violet flex items-center justify-center glow-cyan"
+              className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center"
             >
               {user?.role === 'admin' ? <Shield size={20} /> : <Users size={20} />}
             </motion.div>
@@ -114,8 +116,8 @@ const Sidebar = () => {
                   className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all relative group ${
                     active
                       ? isDark 
-                        ? 'bg-gradient-to-r from-primary-500/20 to-accent-violet/20 text-primary-400 glow-cyan'
-                        : 'bg-gradient-to-r from-primary-500/15 to-accent-violet/15 text-primary-600'
+                        ? 'bg-gradient-to-r from-primary-500/20 to-orange-500/10 text-primary-300'
+                        : 'bg-gradient-to-r from-primary-100 to-orange-100 text-primary-700 border border-primary-200'
                       : isDark
                         ? 'text-gray-400 hover:text-white hover:bg-white/[0.03]'
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
@@ -125,7 +127,7 @@ const Sidebar = () => {
                   {active && (
                     <motion.div
                       layoutId="activeNav"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary-500 to-accent-violet rounded-r-full"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-orange-500 to-green-600 rounded-r-full"
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
                   )}

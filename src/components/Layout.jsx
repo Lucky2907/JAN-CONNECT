@@ -10,7 +10,7 @@ const Layout = () => {
   
   return (
     <div className={`flex h-screen overflow-hidden ${
-      isDark ? 'bg-dark-950' : 'bg-gray-50'
+      isDark ? 'bg-dark-950' : 'bg-slate-50'
     }`}>
       {/* Sidebar */}
       <Sidebar />
@@ -28,7 +28,7 @@ const Layout = () => {
           className={`flex-1 overflow-y-auto mt-16 ${
             isDark
               ? 'bg-gradient-to-br from-dark-950 via-dark-900 to-dark-950'
-              : 'bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50'
+              : 'bg-gradient-to-br from-white via-slate-50 to-white'
           }`}
         >
           <div className="p-8 min-h-full">
@@ -40,10 +40,10 @@ const Layout = () => {
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className={`absolute top-0 right-1/4 w-96 h-96 rounded-full blur-3xl ${
-          isDark ? 'bg-primary-500/5' : 'bg-primary-500/10'
+          isDark ? 'bg-orange-500/10' : 'bg-orange-400/10'
         }`} />
         <div className={`absolute bottom-0 left-1/4 w-96 h-96 rounded-full blur-3xl ${
-          isDark ? 'bg-accent-violet/5' : 'bg-accent-violet/10'
+          isDark ? 'bg-green-500/10' : 'bg-green-500/10'
         }`} />
       </div>
       

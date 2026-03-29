@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signInAnonymously } from 'firebase/auth';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -21,5 +21,14 @@ export const db = getFirestore(app);
 
 // Initialize Authentication
 export const auth = getAuth(app);
+
+export const ensureFirebaseAuth = async () => {
+  if (auth.currentUser) {
+    return auth.currentUser;
+  }
+
+  const result = await signInAnonymously(auth);
+  return result.user;
+};
 
 export default app;
