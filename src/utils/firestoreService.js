@@ -151,7 +151,7 @@ export const getComplaintsByStatus = async (status) => {
  */
 
 // Listen to all complaints in real-time
-export const subscribeToComplaints = (callback) => {
+export const subscribeToComplaints = (callback, onError) => {
   const q = query(complaintsCollection, orderBy('createdAt', 'desc'));
   
   return onSnapshot(q, (snapshot) => {
@@ -175,11 +175,14 @@ export const subscribeToComplaints = (callback) => {
     callback(complaints);
   }, (error) => {
     console.error('Error in complaints listener:', error);
+    if (onError) {
+      onError(error);
+    }
   });
 };
 
 // Listen to user's complaints in real-time
-export const subscribeToUserComplaints = (citizenId, callback) => {
+export const subscribeToUserComplaints = (citizenId, callback, onError) => {
   const q = query(
     complaintsCollection, 
     where('citizenId', '==', citizenId),
@@ -205,11 +208,14 @@ export const subscribeToUserComplaints = (citizenId, callback) => {
     callback(complaints);
   }, (error) => {
     console.error('Error in user complaints listener:', error);
+    if (onError) {
+      onError(error);
+    }
   });
 };
 
 // Listen to specific complaint in real-time
-export const subscribeToComplaint = (complaintId, callback) => {
+export const subscribeToComplaint = (complaintId, callback, onError) => {
   const complaintRef = doc(db, 'complaints', complaintId);
   
   return onSnapshot(complaintRef, (doc) => {
@@ -226,6 +232,9 @@ export const subscribeToComplaint = (complaintId, callback) => {
     }
   }, (error) => {
     console.error('Error in complaint listener:', error);
+    if (onError) {
+      onError(error);
+    }
   });
 };
 

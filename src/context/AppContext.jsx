@@ -4,7 +4,6 @@ import { checkEscalation } from '../utils/calculations';
 import { findNearbyComplaint } from '../utils/calculations';
 import { 
   subscribeToComplaints, 
-  subscribeToUserComplaints,
   addComplaint as addComplaintFirestore,
   updateComplaintStatus as updateComplaintStatusFirestore,
   updateComplaint as updateComplaintFirestore
@@ -22,6 +21,7 @@ export const AppProvider = ({ children }) => {
   const [complaints, setComplaints] = useState(mockComplaints);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [syncError, setSyncError] = useState(null);
 
   // Real-time Firestore listener for all complaints
   useEffect(() => {
@@ -40,10 +40,18 @@ export const AppProvider = ({ children }) => {
 
     // Subscribe to Firestore real-time updates
     setLoading(true);
-    const unsubscribe = subscribeToComplaints((firestoreComplaints) => {
-      setComplaints(firestoreComplaints);
-      setLoading(false);
-    });
+    setSyncError(null);
+    const unsubscribe = subscribeToComplaints(
+      (firestoreComplaints) => {
+        setComplaints(firestoreComplaints);
+        setLoading(false);
+        setSyncError(null);
+      },
+      (error) => {
+        setLoading(false);
+        setSyncError(error?.message || 'Unable to sync with Firestore');
+      }
+    );
 
     // Cleanup subscription on unmount
     return () => unsubscribe();
@@ -238,6 +246,7 @@ export const AppProvider = ({ children }) => {
         isAuthenticated,
         complaints,
         loading,
+        syncError,
         useFirestore: USE_FIRESTORE,
         login,
         logout,

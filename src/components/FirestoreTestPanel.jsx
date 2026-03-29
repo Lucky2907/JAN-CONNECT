@@ -14,7 +14,7 @@ import { Plus, RefreshCw, Database, CheckCircle } from 'lucide-react';
  * <FirestoreTestPanel />
  */
 const FirestoreTestPanel = () => {
-  const { useFirestore, loading, complaints, addComplaint, updateComplaintStatus, user } = useApp();
+  const { useFirestore, loading, complaints, addComplaint, updateComplaintStatus, user, syncError } = useApp();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastAction, setLastAction] = useState(null);
 
@@ -103,10 +103,12 @@ const FirestoreTestPanel = () => {
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Database className="text-green-400" size={24} />
+          <Database className={syncError ? 'text-red-400' : 'text-green-400'} size={24} />
           <div>
             <h3 className="text-lg font-semibold text-white">Firestore Test Panel</h3>
-            <p className="text-xs text-gray-400">Real-time sync active</p>
+            <p className={`text-xs ${syncError ? 'text-red-300' : 'text-gray-400'}`}>
+              {syncError ? `Sync failed: ${syncError}` : 'Real-time sync active'}
+            </p>
           </div>
         </div>
         {loading && (

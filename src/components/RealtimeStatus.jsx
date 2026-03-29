@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { AlertCircle, Wifi, WifiOff, Database, RefreshCw } from 'lucide-react';
+import { AlertCircle, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /**
@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
  * Place this component anywhere in your app to monitor Firestore connectivity
  */
 const RealtimeStatus = () => {
-  const { useFirestore, loading, complaints } = useApp();
+  const { useFirestore, loading, complaints, syncError } = useApp();
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [showDetails, setShowDetails] = useState(false);
   const [changeCount, setChangeCount] = useState(0);
@@ -55,6 +55,11 @@ const RealtimeStatus = () => {
                   <RefreshCw size={16} className="text-blue-400 animate-spin" />
                   <span className="text-sm text-blue-300">Syncing...</span>
                 </>
+              ) : syncError ? (
+                <>
+                  <WifiOff size={16} className="text-red-400" />
+                  <span className="text-sm text-red-300">Unable to sync</span>
+                </>
               ) : (
                 <>
                   <div className="relative">
@@ -98,9 +103,12 @@ const RealtimeStatus = () => {
                   
                   <div className="pt-2 border-t border-white/10">
                     <div className="flex items-start gap-2">
-                      <AlertCircle size={12} className="text-green-400 mt-0.5" />
+                      <AlertCircle
+                        size={12}
+                        className={`${syncError ? 'text-red-400' : 'text-green-400'} mt-0.5`}
+                      />
                       <p className="text-xs text-gray-400">
-                        Changes sync automatically across all devices
+                        {syncError || 'Changes sync automatically across all devices'}
                       </p>
                     </div>
                   </div>
