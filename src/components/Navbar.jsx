@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Bell, ChevronDown, User, Settings, HelpCircle } from 'lucide-react';
+import { Search, Bell, ChevronDown, User, Settings, HelpCircle, Menu } from 'lucide-react';
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
@@ -7,7 +7,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
 
-const Navbar = () => {
+const Navbar = ({ onMenuToggle = () => {} }) => {
   const { user } = useApp();
   const { isDark } = useTheme();
   const { t } = useLanguage();
@@ -19,15 +19,28 @@ const Navbar = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="h-16 glass border-b border-primary-100 flex items-center justify-between px-8 fixed top-0 right-0 left-72 z-40"
+      className="h-16 glass border-b border-primary-100 flex items-center justify-between px-3 sm:px-4 md:px-8 fixed top-0 right-0 left-0 md:left-72 z-40"
     >
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-white to-green-600" />
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={onMenuToggle}
+        className={`md:hidden mr-2 w-10 h-10 flex items-center justify-center rounded-xl border ${
+          isDark
+            ? 'bg-white/[0.03] border-white/[0.08] text-gray-300'
+            : 'bg-white border-slate-300 text-slate-700'
+        }`}
+        aria-label="Toggle sidebar"
+      >
+        <Menu size={20} />
+      </motion.button>
+
       {/* Search Bar */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        className="flex-1 max-w-xl"
+        className="flex-1 max-w-xl min-w-0"
       >
         <div className="relative group">
           <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${
@@ -38,7 +51,7 @@ const Navbar = () => {
           <input
             type="text"
             placeholder={t('submitComplaint.searchAddress')}
-            className={`w-full pl-12 pr-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all ${
+            className={`w-full pl-12 pr-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 transition-all text-sm md:text-base ${
               isDark
                 ? 'bg-white/[0.03] border border-white/[0.08] text-white placeholder-gray-500 focus:border-primary-500/50 focus:ring-primary-500/20'
                 : 'bg-white border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:ring-primary-500/30'
@@ -52,7 +65,7 @@ const Navbar = () => {
       </motion.div>
 
       {/* Right Section */}
-      <div className="flex items-center gap-4 ml-8">
+      <div className="flex items-center gap-2 md:gap-4 ml-2 md:ml-8">
         {/* Theme Toggle */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -67,6 +80,7 @@ const Navbar = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.27 }}
+          className="hidden sm:block"
         >
           <LanguageSwitcher />
         </motion.div>
@@ -113,7 +127,7 @@ const Navbar = () => {
             onClick={() => setShowDropdown(!showDropdown)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className={`flex items-center gap-3 px-3 py-2 rounded-xl border transition-all group ${
+            className={`flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2 rounded-xl border transition-all group ${
               isDark
                 ? 'bg-white/[0.03] border-white/[0.08] hover:border-primary-500/50'
                 : 'bg-white border-gray-300 hover:border-primary-500'
@@ -122,7 +136,7 @@ const Navbar = () => {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center text-white">
               <User size={16} />
             </div>
-            <div className="text-left hidden md:block">
+            <div className="text-left hidden lg:block">
               <p className={`text-sm font-medium ${
                 isDark ? 'text-white' : 'text-gray-900'
               }`}>{user?.name}</p>

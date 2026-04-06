@@ -5,7 +5,7 @@ import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen = false, onClose = () => {} }) => {
   const location = useLocation();
   const { user, logout } = useApp();
   const { isDark } = useTheme();
@@ -30,14 +30,24 @@ const Sidebar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <motion.div
-      initial={{ x: -100, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className={`w-72 h-screen glass flex flex-col fixed left-0 top-0 z-50 ${
-        isDark ? 'border-r border-white/[0.08]' : 'border-r border-gray-200'
-      }`}
-    >
+    <>
+      <div
+        onClick={onClose}
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px] transition-opacity md:hidden ${
+          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      />
+
+      <motion.div
+        initial={{ x: -100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className={`w-72 max-w-[86vw] h-screen glass flex flex-col fixed left-0 top-0 z-50 transform transition-transform duration-300 md:translate-x-0 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${
+          isDark ? 'border-r border-white/[0.08]' : 'border-r border-gray-200'
+        }`}
+      >
       {/* Logo Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -109,7 +119,7 @@ const Sidebar = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 * index }}
             >
-              <Link to={link.to}>
+              <Link to={link.to} onClick={onClose}>
                 <motion.div
                   whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}
@@ -159,7 +169,10 @@ const Sidebar = () => {
         }`}
       >
         <motion.button
-          onClick={logout}
+          onClick={() => {
+            onClose();
+            logout();
+          }}
           whileHover={{ scale: 1.02, x: 4 }}
           whileTap={{ scale: 0.98 }}
           className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all w-full group ${
@@ -172,7 +185,8 @@ const Sidebar = () => {
           <span className="font-medium text-sm">{t('common.logout')}</span>
         </motion.button>
       </motion.div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 };
 
