@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Upload, AlertCircle, Send, X, Image as ImageIcon } from 'lucide-react';
+import { MapPin, Upload, AlertCircle, Send, X, Loader2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -26,6 +26,7 @@ const SubmitComplaint = () => {
   const [imageForensics, setImageForensics] = useState(null);
   const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
   const fileInputRef = useRef(null);
+  const latestScanIdRef = useRef(0);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -75,7 +76,10 @@ const SubmitComplaint = () => {
       return;
     }
 
+    const currentScanId = ++latestScanIdRef.current;
+
     setImageFile(file);
+    setImageForensics(null);
     setIsAnalyzingImage(true);
 
     // Create preview
@@ -88,9 +92,17 @@ const SubmitComplaint = () => {
 
     try {
       const forensicsResult = await analyzeImageForensics(file);
+
+      if (currentScanId !== latestScanIdRef.current) {
+        return;
+      }
+
       setImageForensics(forensicsResult);
     } catch (error) {
       console.error('Image forensics failed:', error);
+      if (currentScanId !== latestScanIdRef.current) {
+        return;
+      }
       setImageForensics({
         verdict: 'SUSPICIOUS',
         confidence: 50,
@@ -101,7 +113,9 @@ const SubmitComplaint = () => {
         action: 'FLAG_FOR_REVIEW'
       });
     } finally {
-      setIsAnalyzingImage(false);
+      if (currentScanId === latestScanIdRef.current) {
+        setIsAnalyzingImage(false);
+      }
     }
   };
 
@@ -129,9 +143,11 @@ const SubmitComplaint = () => {
   };
 
   const handleRemoveImage = () => {
+    latestScanIdRef.current += 1;
     setImageFile(null);
     setImagePreview(null);
     setImageForensics(null);
+    setIsAnalyzingImage(false);
     setFormData(prev => ({ ...prev, imageUrl: null }));
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -150,6 +166,16 @@ const SubmitComplaint = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isAnalyzingImage) {
+      alert('AI verification is still running. Please wait a moment.');
+      return;
+    }
+
+    if (imageFile && !imageForensics) {
+      alert('Please wait for AI verification to complete before submitting.');
+      return;
+    }
 
     if (imageForensics?.action === 'REJECT') {
       alert('❌ This image was rejected by forensics checks. Please upload a genuine photo.');
@@ -381,7 +407,10 @@ const SubmitComplaint = () => {
                       isDark ? 'border-white/[0.12] bg-white/[0.02]' : 'border-slate-200 bg-slate-50'
                     }`}>
                       {isAnalyzingImage ? (
-                        <p className={isDark ? 'text-gray-300' : 'text-slate-700'}>Analyzing image authenticity...</p>
+                        <div className={`flex items-center gap-2 ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
+                          <Loader2 size={16} className="animate-spin" />
+                          <p>AI is verifying this image...</p>
+                        </div>
                       ) : (
                         <>
                           <p className={`font-semibold ${
@@ -399,6 +428,11 @@ const SubmitComplaint = () => {
                           {imageForensics?.reasons?.length > 0 && (
                             <p className={`mt-1 ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
                               Reason: {imageForensics.reasons[0]}
+                            </p>
+                          )}
+                          {imageForensics?.model && (
+                            <p className={`mt-1 ${isDark ? 'text-gray-500' : 'text-slate-500'}`}>
+                              Verified with: {imageForensics.model}
                             </p>
                           )}
                         </>
@@ -534,10 +568,13 @@ const SubmitComplaint = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="flex-1 btn-primary flex items-center justify-center gap-2 text-white px-6 py-4 rounded-xl font-semibold shadow-lg"
+                disabled={isAnalyzingImage}
+                className={`flex-1 btn-primary flex items-center justify-center gap-2 text-white px-6 py-4 rounded-xl font-semibold shadow-lg ${
+                  isAnalyzingImage ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
               >
-                <Send size={20} />
-                Submit Complaint
+                {isAnalyzingImage ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+                {isAnalyzingImage ? 'Verifying Image...' : 'Submit Complaint'}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
