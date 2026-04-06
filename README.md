@@ -26,6 +26,8 @@ JAN CONNECT is a geo-enabled complaint reporting and resolution portal for civic
 - Public transparency dashboard with civic metrics
 - Firebase Firestore real-time sync support
 - Glassmorphism UI with Framer Motion animations
+- AI-powered image authenticity verification at upload time
+- Mobile-first responsive layout with slide-in sidebar drawer
 
 ## Tech Stack
 
@@ -93,7 +95,9 @@ Admin flow:
 ### Citizen Experience
 
 - Complaint submission with category, severity, and location
-- Image upload UI with forensic checks in the original product flow
+- Image upload with real AI verification on selection
+- Submit is blocked until image verification finishes
+- Rejected images are prevented from submission automatically
 - Complaint tracking and status visibility
 - Public dashboard for city-wide transparency
 
@@ -152,6 +156,24 @@ The design language uses a glassmorphism dashboard style with layered depth, sof
 - Cards use blur, transparency, rounded corners, and hover lift
 - Motion is used for page transitions, counters, and status emphasis
 - Layout is responsive and tuned for both desktop and mobile
+
+### Responsive Navigation Updates
+
+- Desktop: fixed left sidebar with top navigation offset
+- Mobile: hamburger-triggered slide-in drawer with backdrop overlay
+- Content area and navbar now use breakpoint-safe spacing (`md:ml-72`, `md:left-72`)
+- Navigation drawer auto-closes after route selection on mobile
+
+### AI Image Verification Flow
+
+- Trigger: starts as soon as the user selects or drops an image
+- UX feedback: shows live "verifying" state with spinner and confidence result
+- Safety gate: form submission is blocked while verification is running
+- Decisioning:
+  - `APPROVE` allows normal submission
+  - `FLAG_FOR_REVIEW` allows submission with caution
+  - `REJECT` blocks submission and asks for a new image
+- Resilience: falls back to heuristic analysis if the AI model is unavailable
 
 ## Project Structure
 
